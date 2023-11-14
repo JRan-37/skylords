@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 5
+VERSION = 6
 
 
 def get_class_by_name(class_name: str):
@@ -59,6 +59,8 @@ type ModeId = int
 type EntityId = int
 """
  ID of an entity present in the match unique to that match
+ First entity have ID 1, next 2, ...
+ Ids are never reused
 """
 
 
@@ -101,18 +103,6 @@ class DeckAPI(BaseModel):
     """
      List of 20 cards in deck.
      Fill empty spaces with `NotACard`.
-    """
-
-
-class MatchPlayer(BaseModel):
-    name: str
-    """
-     Name of player.
-    """
-    deck: DeckAPI
-    """
-     Deck used by that player.
-     TODO Due to technical difficulties might be empty.
     """
 
 
@@ -441,6 +431,55 @@ class Orbs(BaseModel):
     """
 
 
+class APIPlayerEntity(BaseModel):
+    """
+     Technically it is specific case of `APIEntity`, but we decided to move players out,
+     and move few fields up like position and owning player id
+    """
+    id: EntityId
+    """
+     Unique id of the entity
+    """
+    effects: List[int]
+    """
+     List of effects the entity have. (TODO effect information)
+    """
+    aspects: List[dict] | List[Aspect]
+    """
+     List of aspects entity have.
+    """
+    team: int
+    power: float
+    void_power: float
+    population_count: int
+    name: str
+    orbs: Orbs
+
+    # noinspection PyMethodParameters
+    @field_validator("aspects")
+    def validate_aspects(cls, la: List[Aspect]) -> List[Aspect]:
+        res = []
+        for v in la:
+            res.append(get_class_by_name(f"Aspect{list(v.keys())[0]}")(**v[list(v.keys())[0]]))
+        return res
+
+
+class MatchPlayer(BaseModel):
+    name: str
+    """
+     Name of player.
+    """
+    deck: DeckAPI
+    """
+     Deck used by that player.
+     TODO Due to technical difficulties might be empty.
+    """
+    entity: APIPlayerEntity
+    """
+     entity controled by this player
+    """
+
+
 class Position(BaseModel):
     """
      `x` and `z` are coordinates on the 2D map.
@@ -481,21 +520,8 @@ class CreateOrbColor(IntEnum):
     Fire = 4,
 
 
-class APIEntitySpecificPlayer(BaseModel):
-    team: int
-    power: float
-    void_power: float
-    population_count: int
-    name: str
-    orbs: Orbs
-
-    @model_serializer
-    def as_dict(self):
-        return {'Player': self.__dict__}
-
-
 class APIEntitySpecificProjectile(BaseModel):
-    position: Position
+    pass
 
     @model_serializer
     def as_dict(self):
@@ -503,10 +529,8 @@ class APIEntitySpecificProjectile(BaseModel):
 
 
 class APIEntitySpecificPowerSlot(BaseModel):
-    position: Position
     res_id: int
     state: int
-    owner_id: EntityId
     team: int
 
     @model_serializer
@@ -515,9 +539,7 @@ class APIEntitySpecificPowerSlot(BaseModel):
 
 
 class APIEntitySpecificTokenSlot(BaseModel):
-    position: Position
     color: OrbColor
-    owner_id: EntityId
 
     @model_serializer
     def as_dict(self):
@@ -525,7 +547,7 @@ class APIEntitySpecificTokenSlot(BaseModel):
 
 
 class APIEntitySpecificAbilityWorldObject(BaseModel):
-    position: Position
+    pass
 
     @model_serializer
     def as_dict(self):
@@ -533,8 +555,6 @@ class APIEntitySpecificAbilityWorldObject(BaseModel):
 
 
 class APIEntitySpecificSquad(BaseModel):
-    position: Position
-    player_entity_id: EntityId
     card_id: CardId
     res_squad_id: SquadId
     bound_power: float
@@ -550,8 +570,7 @@ class APIEntitySpecificSquad(BaseModel):
 
 
 class APIEntitySpecificFigure(BaseModel):
-    position: Position
-    squad_id: SquadId
+    squad_id: EntityId
     current_speed: float
     rotation_speed: float
     unit_size: int
@@ -563,11 +582,9 @@ class APIEntitySpecificFigure(BaseModel):
 
 
 class APIEntitySpecificBuilding(BaseModel):
-    position: Position
     building_id: BuildingId
     card_id: CardId
     power_cost: float
-    owner_id: EntityId
 
     @model_serializer
     def as_dict(self):
@@ -575,7 +592,7 @@ class APIEntitySpecificBuilding(BaseModel):
 
 
 class APIEntitySpecificBarrierSet(BaseModel):
-    position: Position
+    pass
 
     @model_serializer
     def as_dict(self):
@@ -583,8 +600,6 @@ class APIEntitySpecificBarrierSet(BaseModel):
 
 
 class APIEntitySpecificBarrierModule(BaseModel):
-    position: Position
-    owner: EntityId
     team: int
     set: EntityId
     state: int
@@ -598,8 +613,7 @@ class APIEntitySpecificBarrierModule(BaseModel):
 
 
 APIEntitySpecific = \
-    (APIEntitySpecificPlayer |
-     APIEntitySpecificProjectile |
+    (APIEntitySpecificProjectile |
      APIEntitySpecificPowerSlot |
      APIEntitySpecificTokenSlot |
      APIEntitySpecificAbilityWorldObject |
@@ -667,6 +681,14 @@ class APIEntity(BaseModel):
     aspects: List[dict] | List[Aspect]
     """
      List of aspects entity have.
+    """
+    position: Position
+    """
+     position on the map
+    """
+    player_entity_id: Optional[EntityId] = None
+    """
+     id of player that owns this entity
     """
     specific: Dict[str, dict] | APIEntitySpecific
     """
@@ -1007,6 +1029,10 @@ class APIGameState(BaseModel):
     """
      Commands that will be executed this tick.
     """
+    players: List[APIPlayerEntity]
+    """
+     player entities in the match
+    """
     entities: List[APIEntity]
     """
      All the relevant entities on the map. (For example it does not list all the rocks and trees)
@@ -1039,3 +1065,5 @@ class ApiHello(BaseModel):
     """
      Myp about which is the game asking.
     """
+
+

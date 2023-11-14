@@ -13,7 +13,7 @@ from api.Types import (MapInfo, DeckAPI, APIGameStartState, APIGameState, Positi
 from api.Wrapper import BotImpl
 
 
-# /AI: add PythonExampleBot MA_spam 3
+# /AI: add PythonExampleBot MA_spam 4
 
 
 class MyBot(BotImpl, BaseModel):
@@ -85,22 +85,22 @@ class MyBot(BotImpl, BaseModel):
 
         entities = start_state.entities
 
-        for entity in entities:
-            if entity.specific.__class__ is Types.APIEntitySpecificPlayer:
-                if entity.id == your_player_id:
-                    self._my_team = entity.specific.team
-            elif entity.specific.__class__ is Types.APIEntitySpecificPowerSlot:
-                if entity.specific.owner_id == your_player_id:
-                    print("I own powerwell " + str(entity.id) + " at position " + str(entity.specific.position))
-            elif entity.specific.__class__ is Types.APIEntitySpecificTokenSlot:
-                if entity.specific.owner_id == your_player_id:
-                    print("I own monument " + str(entity.id) + " at position " + str(entity.specific.position))
-                    self.set_start(PositionExtension.to2d(entity.specific.position))
+        for player in start_state.players:
+            if player.entity.id == your_player_id:
+                self._my_team = player.entity.team
+
+        for player in start_state.players:
+            if player.entity.team != self.get_team():
+                self.push_opponent(player.entity.id)
 
         for entity in entities:
-            if entity.specific.__class__ is Types.APIEntitySpecificPlayer:
-                if entity.specific.team != self.get_team:
-                    self.push_opponent(entity.id)
+            if entity.specific.__class__ is Types.APIEntitySpecificPowerSlot:
+                if entity.player_entity_id == your_player_id:
+                    print("I own powerwell " + str(entity.id) + " at position " + str(entity.position))
+            elif entity.specific.__class__ is Types.APIEntitySpecificTokenSlot:
+                if entity.player_entity_id == your_player_id:
+                    print("I own monument " + str(entity.id) + " at position " + str(entity.position))
+                    self.set_start(PositionExtension.to2d(entity.position))
 
     def tick(self, state: APIGameState) -> List[APICommand]:
         current_tick = state.current_tick
@@ -111,16 +111,17 @@ class MyBot(BotImpl, BaseModel):
         target = None
         my_power = 0.0
 
+        for player in state.players:
+            if player.id != self._my_id:
+                my_power = player.power
+
         for entity in entities:
             if entity.specific.__class__ is Types.APIEntitySpecificSquad:
-                if self.get_id() == entity.specific.player_entity_id:
+                if self.get_id() == entity.player_entity_id:
                     my_army.append(entity.id)
             elif entity.specific.__class__ is Types.APIEntitySpecificTokenSlot:
-                if entity.specific.owner_id in self.get_opponents():
+                if entity.player_entity_id in self.get_opponents():
                     target = entity.id
-            elif entity.specific.__class__ is Types.APIEntitySpecificPlayer:
-                if entity.id == self.get_id():
-                    my_power = entity.specific.power
 
         print(f'Current tick: {current_tick} target: {target} my power: {my_power} my army: {my_army}')
 
