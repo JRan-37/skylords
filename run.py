@@ -5,8 +5,10 @@ if __name__ == "__main__":
     argv = sys.argv
     port = 7079
     if len(argv) > 3 or len(argv) < 2:
-        print("Invalid arguments! First argument should be the path to the bot implementation, second argument the port to run it on (default: 7079).")
-        quit
+        print("Invalid arguments! " +
+              "First argument should be the path to the bot implementation, " +
+              "second argument the port to run it on (default: 7079).")
+        quit()
     elif len(argv) == 2:
         print("No port was specified. Using default port 7079.")
     else:
