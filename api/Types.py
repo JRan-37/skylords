@@ -1008,8 +1008,13 @@ class RejectedCommand(BaseModel):
      Command that was rejected.
     """
     player: EntityId
-    reason: CommandRejectionReason
+    reason: Dict[str, dict] | CommandRejectionReason
     command: Dict[str, dict] | APICommand
+
+    # noinspection PyMethodParameters
+    @field_validator("reason")
+    def validate_reason(cls, v: CommandRejectionReason) -> CommandRejectionReason:
+        return get_class_by_name(f"CommandRejectionReason{list(v.keys())[0]}")(**v[list(v.keys())[0]])
 
     # noinspection PyMethodParameters
     @field_validator("command")
