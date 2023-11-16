@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 6
+VERSION = 7
 
 
 def get_class_by_name(class_name: str):
@@ -982,6 +982,41 @@ class PlayerCommand(BaseModel):
         return get_class_by_name(f"APICommand{list(v.keys())[0]}")(**v[list(v.keys())[0]])
 
 
+class CommandRejectionReasonOther(BaseModel):
+    """
+     Rejection reason for `BuildHouse`, `ProduceSquad`, and `ProduceSquadOnBarrier`
+     `numbers2` mostly contains card conditions IDs that caused rejection, but sometimes it is in others
+    """
+    numbers1: List[int]
+    numbers2: List[int]
+    numbers3: List[int]
+
+    @model_serializer
+    def as_dict(self):
+        return {'Other': self.__dict__}
+
+
+CommandRejectionReason = \
+    (CommandRejectionReasonOther)
+"""
+ Reason why command was rejected
+"""
+
+
+class RejectedCommand(BaseModel):
+    """
+     Command that was rejected.
+    """
+    player: EntityId
+    reason: CommandRejectionReason
+    command: Dict[str, dict] | APICommand
+
+    # noinspection PyMethodParameters
+    @field_validator("command")
+    def validate_command(cls, v: APICommand) -> APICommand:
+        return get_class_by_name(f"APICommand{list(v.keys())[0]}")(**v[list(v.keys())[0]])
+
+
 class AiForMapAPI(BaseModel):
     """
      Response on the `/hello` endpoint.
@@ -1028,6 +1063,10 @@ class APIGameState(BaseModel):
     commands: List[PlayerCommand]
     """
      Commands that will be executed this tick.
+    """
+    rejected_commands: List[RejectedCommand]
+    """
+     Commands that was rejected.
     """
     players: List[APIPlayerEntity]
     """
