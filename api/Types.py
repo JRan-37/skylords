@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 8
+VERSION = 9
 
 
 def get_class_by_name(class_name: str):
@@ -1117,6 +1117,28 @@ class CommandRejectionReasonModeNotExist(BaseModel):
         return {'ModeNotExist': self.__dict__}
 
 
+class CommandRejectionReasonInvalidCardIndex(BaseModel):
+    """
+     Card index must be 0-19
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'InvalidCardIndex': self.__dict__}
+
+
+class CommandRejectionReasonInvalidCard(BaseModel):
+    """
+     Card on the given index is invalid
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'InvalidCard': self.__dict__}
+
+
 CommandRejectionReason = \
     (CommandRejectionReasonOther |
      CommandRejectionReasonNotEnoughPower |
@@ -1128,7 +1150,9 @@ CommandRejectionReason = \
      CommandRejectionReasonEntityOwnedBySomeoneElse |
      CommandRejectionReasonNoModeChange |
      CommandRejectionReasonEntityAlreadyInThisMode |
-     CommandRejectionReasonModeNotExist)
+     CommandRejectionReasonModeNotExist |
+     CommandRejectionReasonInvalidCardIndex |
+     CommandRejectionReasonInvalidCard)
 """
  Reason why command was rejected
 """
