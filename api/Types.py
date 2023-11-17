@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 7
+VERSION = 8
 
 
 def get_class_by_name(class_name: str):
@@ -152,7 +152,8 @@ class AspectCombat(BaseModel):
 
 
 class AspectModeChange(BaseModel):
-    pass
+    current_mode: ModeId
+    all_modes: List[ModeId]
 
     @model_serializer
     def as_dict(self):
@@ -264,7 +265,7 @@ class AspectHate(BaseModel):
 
 
 class AspectBarrierGate(BaseModel):
-    pass
+    open: bool
 
     @model_serializer
     def as_dict(self):
@@ -941,6 +942,14 @@ class APICommandSurrender(BaseModel):
         return {'Surrender': self.__dict__}
 
 
+class APICommandWhisperToMaster(BaseModel):
+    text: str
+
+    @model_serializer
+    def as_dict(self):
+        return {'WhisperToMaster': self.__dict__}
+
+
 APICommand = \
     (APICommandBuildHouse |
      APICommandCastSpellGod |
@@ -963,7 +972,8 @@ APICommand = \
      APICommandModeChange |
      APICommandPowerSlotBuild |
      APICommandTokenSlotBuild |
-     APICommandSurrender)
+     APICommandSurrender |
+     APICommandWhisperToMaster)
 """
  All the different command bot can issue.
 """
@@ -996,8 +1006,129 @@ class CommandRejectionReasonOther(BaseModel):
         return {'Other': self.__dict__}
 
 
+class CommandRejectionReasonNotEnoughPower(BaseModel):
+    """
+     Player did not have enough power to play the card or activate the ability
+    """
+    player_power: float
+    required: int
+
+    @model_serializer
+    def as_dict(self):
+        return {'NotEnoughPower': self.__dict__}
+
+
+class CommandRejectionReasonSpellDoesNotExist(BaseModel):
+    """
+     Player did not have enough power to play the card or activate the ability
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'SpellDoesNotExist': self.__dict__}
+
+
+class CommandRejectionReasonEntityDoesNotExist(BaseModel):
+    """
+     The entity is not on the map
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'EntityDoesNotExist': self.__dict__}
+
+
+class CommandRejectionReasonInvalidEntityType(BaseModel):
+    """
+     Entity exist, but type is not correct
+    """
+    entity_type: int
+
+    @model_serializer
+    def as_dict(self):
+        return {'InvalidEntityType': self.__dict__}
+
+
+class CommandRejectionReasonCanNotCast(BaseModel):
+    """
+     Rejection reason for `CastSpellEntity`
+    """
+    failed_conditions: List[int]
+
+    @model_serializer
+    def as_dict(self):
+        return {'CanNotCast': self.__dict__}
+
+
+class CommandRejectionReasonEntityNotOwned(BaseModel):
+    """
+     Bot issued command for entity it does not own
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'EntityNotOwned': self.__dict__}
+
+
+class CommandRejectionReasonEntityOwnedBySomeoneElse(BaseModel):
+    """
+     Bot issued command for entity owned by someone else
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'EntityOwnedBySomeoneElse': self.__dict__}
+
+
+class CommandRejectionReasonNoModeChange(BaseModel):
+    """
+     Bot issued command for entity to change mode, but the entity does not have `ModeChange` aspect.
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'NoModeChange': self.__dict__}
+
+
+class CommandRejectionReasonEntityAlreadyInThisMode(BaseModel):
+    """
+     Trying to change to mode, in which the entity already is.
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'EntityAlreadyInThisMode': self.__dict__}
+
+
+class CommandRejectionReasonModeNotExist(BaseModel):
+    """
+     Trying to change to moe, that the entity does not have.
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'ModeNotExist': self.__dict__}
+
+
 CommandRejectionReason = \
-    (CommandRejectionReasonOther)
+    (CommandRejectionReasonOther |
+     CommandRejectionReasonNotEnoughPower |
+     CommandRejectionReasonSpellDoesNotExist |
+     CommandRejectionReasonEntityDoesNotExist |
+     CommandRejectionReasonInvalidEntityType |
+     CommandRejectionReasonCanNotCast |
+     CommandRejectionReasonEntityNotOwned |
+     CommandRejectionReasonEntityOwnedBySomeoneElse |
+     CommandRejectionReasonNoModeChange |
+     CommandRejectionReasonEntityAlreadyInThisMode |
+     CommandRejectionReasonModeNotExist)
 """
  Reason why command was rejected
 """

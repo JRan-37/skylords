@@ -112,7 +112,7 @@ class MyBot(BotImpl, BaseModel):
         my_power = 0.0
 
         for player in state.players:
-            if player.id != self._my_id:
+            if player.id == self.get_id():
                 my_power = player.power
 
         for entity in entities:
