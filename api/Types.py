@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 9
+VERSION = 10
 
 
 def get_class_by_name(class_name: str):
@@ -662,9 +662,20 @@ class WalkMode(IntEnum):
     PartialForce = 1,
     Force = 2,
     Normal = 4,
+    """
+     Also called by players "Attack move", or "Q move"
+    """
     Crusade = 5,
     Scout = 6,
     Patrol = 7,
+
+
+class Ping(IntEnum):
+    Attention = 0,
+    Attack = 1,
+    Defend = 2,
+    NeedHelp = 4,
+    Meet = 5,
 
 
 class APIEntity(BaseModel):
@@ -934,6 +945,15 @@ class APICommandTokenSlotBuild(BaseModel):
         return {'TokenSlotBuild': self.__dict__}
 
 
+class APICommandPing(BaseModel):
+    xy: Position2D
+    ping: Ping
+
+    @model_serializer
+    def as_dict(self):
+        return {'Ping': self.__dict__}
+
+
 class APICommandSurrender(BaseModel):
     pass
 
@@ -972,6 +992,7 @@ APICommand = \
      APICommandModeChange |
      APICommandPowerSlotBuild |
      APICommandTokenSlotBuild |
+     APICommandPing |
      APICommandSurrender |
      APICommandWhisperToMaster)
 """
