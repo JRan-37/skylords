@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 11
+VERSION = 12
 
 
 def get_class_by_name(class_name: str):
@@ -47,6 +47,12 @@ type BuildingId = int
 type SpellId = int
 """
  ID of spell resource
+"""
+
+
+type AbilityId = int
+"""
+ ID of ability resource
 """
 
 
@@ -106,6 +112,283 @@ class DeckAPI(BaseModel):
     """
 
 
+class AbilityLine(IntEnum):
+    _EAsBug_betterSafeThanSorry = 0,
+    ModifyWalkSpeed = 1,
+    UnControllable = 4,
+    UnKillable = 5,
+    UnAttackable = 9,
+    HitMultiple = 10,
+    _ACModifier = 14,
+    DamageOverTime = 15,
+    DamageBuff = 21,
+    PowerOutputModifier = 23,
+    MoveSpeedOverwrite = 24,
+    HitMultipleRanged = 25,
+    HPModifier = 26,
+    Aura = 27,
+    PreventCardPlay = 29,
+    _SpreadFire = 31,
+    _SquadSpawnZone = 32,
+    HitMultipleProjectile = 33,
+    _MarkedTargetDamageMultiplier = 36,
+    _MarkedTargetDamage = 37,
+    _AttackPauseDelay = 39,
+    _MarkedForTeleport = 40,
+    _RangeModifier = 41,
+    ForceAttack = 42,
+    OnEntityDie = 44,
+    _FireLanceAbility = 47,
+    Collector = 50,
+    _ChangeTargetAggro = 51,
+    _FireLanceBurstCollector = 53,
+    RegenerationOld = 54,
+    _TimedSpell = 57,
+    Scatter = 58,
+    _DamageOverTimeNoCombat = 59,
+    LifeStealer = 60,
+    BarrierGate = 61,
+    GlobalRevive = 62,
+    TrampleResistance = 64,
+    TrampleOverwrite = 65,
+    PushbackResistance = 66,
+    MeleePushbackOverride = 67,
+    _FanCollector = 69,
+    MeleeFightSpeedModifier = 71,
+    _SpellRangeModifierIncoming = 72,
+    SpellRangeModifierOutgoing = 73,
+    _FanCollectorBurst = 74,
+    RangedFightSpeedModifier = 75,
+    _SquadRestore = 76,
+    DamagePowerTransfer = 79,
+    TimedSpell = 80,
+    TrampleRevengeDamage = 81,
+    LinkedFire = 83,
+    DamageBuffAgainst = 84,
+    IncomingDamageModifier = 85,
+    GeneratorPower = 86,
+    IceShield = 87,
+    DoTRefresh = 88,
+    EnrageThreshold = 89,
+    Immunity = 90,
+    _UnitSpawnZone = 91,
+    Rage = 92,
+    _PassiveCharge = 93,
+    MeleeHitSpell = 95,
+    _FireDebuff = 97,
+    FrostDebuff = 98,
+    SpellBlocker = 100,
+    ShadowDebuff = 102,
+    SuicidalBomb = 103,
+    GrantToken = 110,
+    TurretCannon = 112,
+    SpellOnSelfCast = 113,
+    AbilityOnSelfResolve = 114,
+    SuppressUserCommand = 118,
+    LineCast = 120,
+    NoCheer = 132,
+    UnitShredderJobCondition = 133,
+    DamageRadialArea = 134,
+    _DamageConeArea = 137,
+    DamageConeCutArea = 138,
+    ConstructionRepairModifier = 139,
+    Portal = 140,
+    Tunnel = 141,
+    ModeConditionDelay = 142,
+    HealAreaRadial = 144,
+    _145LeftoverDoesNotReallyExistButIsUsed = 145,
+    _146LeftoverDoesNotReallyExistButIsUsed = 146,
+    OverrideWeaponType = 151,
+    DamageRadialAreaUsingCorpse = 153,
+    HealAreaRadialInstantContinues = 154,
+    ChargeableBombController = 155,
+    ChargeAttack = 156,
+    ChargeableBomb = 157,
+    ModifyRotationSpeed = 159,
+    ModifyAcceleration = 160,
+    FormationOverwrite = 161,
+    EffectHolder = 162,
+    WhiteRangersHomeDefenseTrigger = 163,
+    _167LeftoverDoesNotReallyExistButIsUsed = 167,
+    _168LeftoverDoesNotReallyExistButIsUsed = 168,
+    HealReservoirUsingCorpse = 170,
+    ModeChangeBlocker = 171,
+    BarrierModuleEnterBlock = 172,
+    ProduceAmmoUsingCorpseInjurity = 173,
+    IncomingDamageSpreadOnTargetAlignmentArea1 = 174,
+    DamageSelfOnMeleeHit = 175,
+    HealthCapCurrent = 176,
+    ConstructionUnCrushable = 179,
+    ProduceAmmoOverTime = 180,
+    BarrierSetBuildDelay = 181,
+    ChannelTimedSpell = 183,
+    AuraOnEnter = 184,
+    ParalyzeAbility = 185,
+    IgnoreSummoningSickness = 186,
+    BlockRepair = 187,
+    Corruption = 188,
+    UnHealable = 189,
+    Immobile = 190,
+    ModifyHealing = 191,
+    IgnoreInCardCondition = 192,
+    MovementMode = 193,
+    ConsumeAmmoHealSelf = 195,
+    ConsumeAmmoHealAreaRadial = 196,
+    CorpseGather = 197,
+    AbilityNearEntity = 198,
+    ModifyIceShieldDecayRate = 200,
+    ModifyDamageIncomingAuraContingentSelfDamage = 201,
+    ModifyDamageIncomingAuraContingentSelfDamageTargetAbility = 202,
+    ConvertCorpseToPower = 203,
+    EraseOverTime = 204,
+    FireStreamChannel = 205,
+    DisableMeleeAttack = 206,
+    AbilityOnPlayer = 207,
+    GlobalAbilityOnEntity = 208,
+    AuraModifyCardCost = 209,
+    AuraModifyBuildTime = 210,
+    GlobalRotTimeModifier = 211,
+    _212LeftoverDoesNotReallyExistButIsUsed = 212,
+    MindControl = 213,
+    SpellOnEntityNearby = 214,
+    AmmoConsumeModifyIncomingDamage = 216,
+    AmmoConsumeModifyOutgoingDamage = 217,
+    GlobalSuppressRefund = 219,
+    DirectRefundOnDie = 220,
+    OutgoingDamageDependendSpell = 221,
+    DeathCounter = 222,
+    DeathCounterController = 223,
+    DamageRadialAreaUsingGraveyard = 224,
+    MovingIntervalCast = 225,
+    BarrierGateDelay = 226,
+    EffectHolderAmmo = 227,
+    FightDependentAbility = 228,
+    GlobalIgnoreCardPlayConditions = 229,
+    WormMovement = 230,
+    DamageRectAreaAligned = 231,
+    GlobalRefundOnEntityDie = 232,
+    GlobalDamageAbsorption = 233,
+    GlobalPowerRecovermentModifier = 234,
+    GlobalDamageAbsorptionTargetAbility = 235,
+    OverwriteVisRange = 236,
+    DamageOverTimeCastDepending = 237,
+    ModifyDamageIncomingAuraContingentSelfRadialAreaDamage = 238,
+    SuperWeaponShadow = 239,
+    NoMeleeAgainstAir = 240,
+    _SuperWeaponShadowDamage = 242,
+    NoCardPlay = 243,
+    NoClaim = 244,
+    DamageRadialAreaAmmo = 246,
+    PathLayerOverride = 247,
+    ChannelBlock = 248,
+    Polymorph = 249,
+    Delay = 250,
+    ModifyDamageIncomingOnFigure = 251,
+    ImmobileRoot = 252,
+    GlobalModifyCorpseGather = 253,
+    AbilityDependentAbility = 254,
+    CorpseManager = 255,
+    DisableToken = 256,
+    Piercing = 258,
+    ReceiveMeleeAttacks = 259,
+    BuildBlock = 260,
+    PreventCardPlayAuraBuilding = 262,
+    GraveyardDependentRecast = 263,
+    ClaimBlock = 264,
+    AmmoStartup = 265,
+    DamageDistribution = 266,
+    SwapSquadNightGuard = 267,
+    Revive = 268,
+    Amok = 269,
+    NoCombat = 270,
+    SlowDownDisabled = 271,
+    CrowdControlTimeModifier = 272,
+    DamageOnMeleeHit = 273,
+    IgnoreIncomingDamageModifier = 275,
+    BlockRevive = 278,
+    GlobalMorphState = 279,
+    SpecialOnTarget = 280,
+    FleshBenderBugSwitch = 281,
+    TimedMorph = 282,
+    GlobalBuildTimeModifier = 283,
+    CardBlock = 285,
+    IceShieldRegeneration = 286,
+    HealOverTime = 287,
+    IceShieldTimerOffset = 288,
+    SpellOnVanish = 289,
+    GlobalVoidAbsorption = 290,
+    VoidContainer = 291,
+    ConvertCorpseToHealing = 292,
+    OnEntitySpawn = 293,
+    OnMorph = 294,
+
+
+class AbilityEffectSpecificDamageRadialArea(BaseModel):
+    progress_current: float
+    progress_delta: float
+    damage_remaining: float
+
+    @model_serializer
+    def as_dict(self):
+        return {'DamageRadialArea': self.__dict__}
+
+
+class AbilityEffectSpecificDamageOverTime(BaseModel):
+    tick_wait_duration: int
+    ticks_left: int
+    tick_damage: float
+
+    @model_serializer
+    def as_dict(self):
+        return {'DamageOverTime': self.__dict__}
+
+
+class AbilityEffectSpecificLinkedFire(BaseModel):
+    linked: bool
+    fighting: bool
+    fast_cast: int
+    support_cap: int
+    support_production: int
+
+    @model_serializer
+    def as_dict(self):
+        return {'LinkedFire': self.__dict__}
+
+
+class AbilityEffectSpecificOther(BaseModel):
+    """
+     If you think something interesting got hidden by Other report it
+    """
+    pass
+
+    @model_serializer
+    def as_dict(self):
+        return {'Other': self.__dict__}
+
+
+AbilityEffectSpecific = \
+    (AbilityEffectSpecificDamageRadialArea |
+     AbilityEffectSpecificDamageOverTime |
+     AbilityEffectSpecificLinkedFire |
+     AbilityEffectSpecificOther)
+
+
+class AbilityEffect(BaseModel):
+    id: AbilityId
+    line: AbilityLine
+    source: EntityId
+    source_team: int
+    start_tick: int
+    """
+     Can be zero, if not provided
+    """
+    end_tick: int
+    """
+     Can be zero, if not provided
+    """
+    specific: AbilityEffectSpecific
+
+
 class AspectPowerProduction(BaseModel):
     """
      Used by *mostly* power wells
@@ -116,7 +399,6 @@ class AspectPowerProduction(BaseModel):
     """
     power_capacity: float
     """
-     TODO is this actually useful to know how much power it could produce in total?
      Same as `current_power`, before it is build for the first time.
     """
 
@@ -493,9 +775,9 @@ class APIPlayerEntity(BaseModel):
     """
      Unique id of the entity
     """
-    effects: List[int]
+    effects: List[AbilityEffect]
     """
-     List of effects the entity have. (TODO effect information)
+     List of effects the entity have.
     """
     aspects: List[dict] | List[Aspect]
     """
@@ -738,9 +1020,9 @@ class APIEntity(BaseModel):
     """
      Unique id of the entity
     """
-    effects: List[int]
+    effects: List[AbilityEffect]
     """
-     List of effects the entity have. (TODO effect information)
+     List of effects the entity have.
     """
     aspects: List[dict] | List[Aspect]
     """
