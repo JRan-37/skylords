@@ -5,7 +5,7 @@ from api.Maps import Maps
 from pydantic import BaseModel, field_validator, model_serializer
 from typing import Optional
 
-VERSION = 10
+VERSION = 11
 
 
 def get_class_by_name(class_name: str):
@@ -97,7 +97,7 @@ class DeckAPI(BaseModel):
     """
     cover_card_index: int
     """
-     Index of a card that will be deck icon 0..=19
+     Index of a card that will be deck icon 0 to 19 inclusive
     """
     cards: List[CardId]
     """
@@ -117,7 +117,7 @@ class AspectPowerProduction(BaseModel):
     power_capacity: float
     """
      TODO is this actually useful to know how much power it could produce in total?
-     Same as `current_power`, bedore it is build for the first time.
+     Same as `current_power`, before it is build for the first time.
     """
 
     @model_serializer
@@ -298,7 +298,7 @@ class AspectPortalExit(BaseModel):
 
 class AspectConstructionData(BaseModel):
     """
-     When building / barrier is under construction it have this aspect.
+     When building / barrier is under construction it has this aspect.
     """
     refresh_count_remaining: int
     """
@@ -410,6 +410,58 @@ Aspect = \
      AspectRoam)
 
 
+class Job(IntEnum):
+    NoJob = 0,
+    Idle = 1,
+    GoTo = 2,
+    """
+     also can be `GotoWormMovement`
+    """
+    HitTargetMelee3 = 3,
+    Cast = 4,
+    CastResolve = 5,
+    Die = 6,
+    CorpseRot = 7,
+    Talk = 8,
+    Freeze = 9,
+    Cheer = 10,
+    HitTargetMelee11 = 11,
+    InstantCast = 12,
+    Spawn = 13,
+    Deploy = 14,
+    _UnknownReportIt15 = 15,
+    _UnknownReportIt16 = 16,
+    _UnknownReportIt17 = 17,
+    _UnknownReportIt18 = 18,
+    AttackSquadWorker = 19,
+    PushBackFly = 20,
+    PushBackStandUp = 21,
+    StampedeStart = 22,
+    StampedeRun = 23,
+    StampedeStop = 24,
+    StampedeSquad = 25,
+    BarrierCrush = 26,
+    BarrierGateToggle = 27,
+    FlameThrowerInit = 28,
+    FlameThrowerWork = 29,
+    FlameThrowerShutDown = 30,
+    Nothing = 31,
+    _UnknownReportIt32 = 32,
+    _UnknownReportIt33 = 33,
+    _UnknownReportIt34 = 34,
+    Construct = 35,
+    Crush = 36,
+    MountBarrierSquad = 37,
+    ModeChange = 38,
+    TurretAim = 39,
+    ChannelStart = 40,
+    ChannelLoop = 41,
+    ChannelEnd = 42,
+    GotoWormMovement = 43,
+    Morph = 44,
+    _UnknownReportIt45OrMore = 255,
+
+
 class Orbs(BaseModel):
     """
      Simplified version of how many monuments of each color player have
@@ -477,7 +529,7 @@ class MatchPlayer(BaseModel):
     """
     entity: APIPlayerEntity
     """
-     entity controled by this player
+     entity controlled by this player
     """
 
 
@@ -693,6 +745,10 @@ class APIEntity(BaseModel):
     aspects: List[dict] | List[Aspect]
     """
      List of aspects entity have.
+    """
+    job: Job
+    """
+     What is the entity doing right now
     """
     position: Position
     """
